@@ -5,11 +5,12 @@ import { getTokenPayload } from "@/lib/auth";
 
 /** Toggle a like on a community post for the current user. */
 export async function POST(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const post = await CommunityPost.findById(params.id).catch(() => null);
+  const post = await CommunityPost.findById(id).catch(() => null);
   if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
 
   const uid = String(payload.id);

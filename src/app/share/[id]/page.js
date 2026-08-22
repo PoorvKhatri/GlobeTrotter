@@ -33,8 +33,9 @@ import CopyTripButton from "@/components/itinerary/CopyTripButton";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
+  const { id } = await params;
   await connectDB();
-  const doc = await Trip.findById(params.id).lean().catch(() => null);
+  const doc = await Trip.findById(id).lean().catch(() => null);
   if (!doc || !doc.isPublic) return { title: "Shared trip" };
   return {
     title: `${doc.name} — a travel itinerary`,
@@ -67,11 +68,12 @@ function PublicShell({ children, loggedIn }) {
 }
 
 export default async function SharePage({ params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   const loggedIn = Boolean(payload?.id);
 
   await connectDB();
-  const doc = await Trip.findById(params.id)
+  const doc = await Trip.findById(id)
     .populate("user", "name firstName photo city country")
     .lean()
     .catch(() => null);

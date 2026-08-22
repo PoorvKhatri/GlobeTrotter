@@ -58,7 +58,7 @@ export async function POST(request) {
     });
 
     const token = signToken({ id: user._id.toString(), role: user.role });
-    setAuthCookie(token);
+    await setAuthCookie(token);
 
     return NextResponse.json({
       user: {
@@ -71,6 +71,12 @@ export async function POST(request) {
     });
   } catch (err) {
     console.error("register error", err);
+    if (err?.name === "MongoNetworkError" || err?.name === "MongooseServerSelectionError") {
+      return NextResponse.json(
+        { error: "The database is temporarily unavailable. Please try again." },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

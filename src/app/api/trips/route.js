@@ -5,7 +5,7 @@ import { getTokenPayload } from "@/lib/auth";
 import { serialize, serializeMany } from "@/lib/utils";
 
 export async function GET() {
-  const payload = getTokenPayload();
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
@@ -14,7 +14,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const payload = getTokenPayload();
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {

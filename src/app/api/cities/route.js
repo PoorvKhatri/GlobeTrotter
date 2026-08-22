@@ -7,6 +7,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q")?.trim();
   const region = searchParams.get("region");
+  const country = searchParams.get("country")?.trim();
+  const excludeCity = searchParams.get("excludeCity")?.trim();
   const sort = searchParams.get("sort") || "popularity";
   const limit = Math.min(Number(searchParams.get("limit")) || 60, 200);
 
@@ -22,6 +24,8 @@ export async function GET(request) {
     ];
   }
   if (region && region !== "all") filter.region = region;
+  if (country) filter.country = { $regex: `^${country}$`, $options: "i" };
+  if (excludeCity) filter.name = { $not: new RegExp(`^${excludeCity}$`, "i") };
 
   const sortMap = {
     popularity: { popularity: -1 },

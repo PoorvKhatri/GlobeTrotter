@@ -18,12 +18,14 @@ import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { EmptyState, Spinner } from "@/components/ui/Loading";
 import { useToast } from "@/components/ui/Toast";
+import { useUser } from "@/components/UserProvider";
 import { unsplash, toDateInput } from "@/lib/utils";
 import api from "@/lib/api";
 
 export default function CreateTripPage() {
   const router = useRouter();
   const toast = useToast();
+  const user = useUser();
 
   const [form, setForm] = useState({
     name: "",
@@ -44,8 +46,22 @@ export default function CreateTripPage() {
     setForm((f) => ({ ...f, [k]: e.target?.type === "checkbox" ? e.target.checked : e.target.value }));
 
   useEffect(() => {
-    api.get("/api/cities?limit=6").then((d) => setSuggestions(d.cities || [])).catch(() => {});
-  }, []);
+    const params = new URLSearchParams({ limit: "6", sort: "popularity" });
+    if (user?.country) {
+      params.set("country", user.country);
+      if (user.city) params.set("excludeCity", user.city);
+    }
+
+    api
+      .get(`/api/cities?${params.toString()}`)
+      .then((d) => {
+        if (d.cities?.length) return setSuggestions(d.cities);
+        return api
+          .get("/api/cities?limit=6&sort=popularity")
+          .then((fallback) => setSuggestions(fallback.cities || []));
+      })
+      .catch(() => setSuggestions([]));
+  }, [user?.city, user?.country]);
 
   useEffect(() => {
     if (!cityQuery.trim()) {
@@ -168,6 +184,7 @@ export default function CreateTripPage() {
                   <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-ink-100 bg-white shadow-card">
                     {results.map((c) => (
                       <button
+                        type="button"
                         key={c.id}
                         onClick={() => addDestination(c)}
                         className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-ink-50"
@@ -225,6 +242,7 @@ export default function CreateTripPage() {
                 <button
                   key={c.id}
                   onClick={() => addDestination(c)}
+                  type="button"
                   className="group relative h-32 overflow-hidden rounded-2xl bg-ink-100 text-left shadow-card"
                 >
                   <img src={c.image || unsplash(c.name)} alt={c.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" />

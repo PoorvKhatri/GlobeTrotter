@@ -30,8 +30,9 @@ export function verifyToken(token) {
 }
 
 /** Set the auth cookie (HTTP-only). Call from a route handler / server action. */
-export function setAuthCookie(token) {
-  cookies().set({
+export async function setAuthCookie(token) {
+  const cookieStore = await cookies();
+  cookieStore.set({
     name: AUTH_COOKIE,
     value: token,
     httpOnly: true,
@@ -42,8 +43,9 @@ export function setAuthCookie(token) {
   });
 }
 
-export function clearAuthCookie() {
-  cookies().set({
+export async function clearAuthCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set({
     name: AUTH_COOKIE,
     value: "",
     httpOnly: true,
@@ -57,7 +59,8 @@ export function clearAuthCookie() {
  * Returns a plain object (safe to serialize) or null.
  */
 export async function getCurrentUser() {
-  const token = cookies().get(AUTH_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AUTH_COOKIE)?.value;
   if (!token) return null;
 
   const decoded = verifyToken(token);
@@ -86,8 +89,9 @@ export async function getCurrentUser() {
 }
 
 /** Guard for API routes — returns the decoded token payload or null. */
-export function getTokenPayload() {
-  const token = cookies().get(AUTH_COOKIE)?.value;
+export async function getTokenPayload() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AUTH_COOKIE)?.value;
   if (!token) return null;
   return verifyToken(token);
 }

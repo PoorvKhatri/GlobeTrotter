@@ -5,11 +5,12 @@ import { getTokenPayload } from "@/lib/auth";
 
 /** Delete a community post (author only). */
 export async function DELETE(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const post = await CommunityPost.findById(params.id).catch(() => null);
+  const post = await CommunityPost.findById(id).catch(() => null);
   if (!post) return NextResponse.json({ error: "Post not found." }, { status: 404 });
   if (String(post.user) !== String(payload.id)) {
     return NextResponse.json({ error: "You can only delete your own posts." }, { status: 403 });

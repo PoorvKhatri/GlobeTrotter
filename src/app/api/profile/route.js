@@ -11,7 +11,7 @@ export async function GET() {
 }
 
 export async function PUT(request) {
-  const payload = getTokenPayload();
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {

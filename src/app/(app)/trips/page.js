@@ -26,11 +26,19 @@ export default function MyTripsPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
+    let active = true;
     api
       .get("/api/trips")
-      .then((d) => setTrips(d.trips || []))
+      .then((d) => {
+        if (active) setTrips(d.trips || []);
+      })
       .catch(() => toast.error("Could not load trips"))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const withStatus = useMemo(

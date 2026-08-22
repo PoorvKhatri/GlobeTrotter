@@ -35,11 +35,12 @@ import ShareButton from "@/components/itinerary/ShareButton";
 export const dynamic = "force-dynamic";
 
 export default async function TripViewPage({ params }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   await connectDB();
-  const doc = await Trip.findById(params.id).lean().catch(() => null);
+  const doc = await Trip.findById(id).lean().catch(() => null);
   if (!doc) notFound();
 
   const isOwner = String(doc.user) === String(user.id);

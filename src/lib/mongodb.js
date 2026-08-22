@@ -19,15 +19,14 @@ if (!cached) {
 }
 
 export async function connectDB() {
-  if (cached.conn) return cached.conn;
+  if (cached.conn && mongoose.connection.readyState === 1) return cached.conn;
+
+  if (mongoose.connection.readyState !== 1) {
+    cached.conn = null;
+  }
 
   if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        bufferCommands: false,
-        dbName: "globetrotter",
-      })
-      .then((m) => m);
+    cached.promise = connectWithRetry();
   }
 
   try {
@@ -38,6 +37,29 @@ export async function connectDB() {
   }
 
   return cached.conn;
+}
+
+async function connectWithRetry() {
+  let lastError;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await mongoose.connect(MONGODB_URI, {
+        bufferCommands: false,
+        dbName: "globetrotter",
+        family: 4,
+        serverSelectionTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+      }
+    }
+  }
+
+  throw lastError;
 }
 
 export default connectDB;

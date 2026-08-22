@@ -29,7 +29,7 @@ export async function POST(request) {
     }
 
     const token = signToken({ id: user._id.toString(), role: user.role });
-    setAuthCookie(token);
+    await setAuthCookie(token);
 
     return NextResponse.json({
       user: {

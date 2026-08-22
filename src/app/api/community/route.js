@@ -31,7 +31,7 @@ export async function GET(request) {
     .limit(60)
     .lean();
 
-  const payload = getTokenPayload();
+  const payload = await getTokenPayload();
   const userId = payload?.id ? String(payload.id) : null;
   const withLiked = posts.map((p) => ({
     ...p,

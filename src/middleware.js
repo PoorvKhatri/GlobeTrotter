@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { AUTH_COOKIE } from "@/lib/auth";
+
+const AUTH_COOKIE = "gt_token";
 
 /**
  * Lightweight route protection. We only check for the presence of the auth
@@ -17,8 +18,6 @@ const PROTECTED = [
   "/admin",
 ];
 
-const AUTH_PAGES = ["/login", "/register"];
-
 export function middleware(request) {
   const { pathname } = request.nextUrl;
   const hasToken = Boolean(request.cookies.get(AUTH_COOKIE)?.value);
@@ -26,18 +25,10 @@ export function middleware(request) {
   const isProtected = PROTECTED.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
-  const isAuthPage = AUTH_PAGES.includes(pathname);
-
   if (isProtected && !hasToken) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthPage && hasToken) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

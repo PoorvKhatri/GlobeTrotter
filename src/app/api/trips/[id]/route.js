@@ -13,12 +13,13 @@ async function findOwned(id, userId) {
 }
 
 export async function GET(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   await connectDB();
 
   let trip;
   try {
-    trip = await Trip.findById(params.id).lean();
+    trip = await Trip.findById(id).lean();
   } catch {
     trip = null;
   }
@@ -33,10 +34,11 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const trip = await connectDB().then(() => findOwned(params.id, payload.id));
+  const trip = await connectDB().then(() => findOwned(id, payload.id));
   if (!trip) return NextResponse.json({ error: "Trip not found." }, { status: 404 });
 
   try {
@@ -63,11 +65,12 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   if (!payload?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const trip = await findOwned(params.id, payload.id);
+  const trip = await findOwned(id, payload.id);
   if (!trip) return NextResponse.json({ error: "Trip not found." }, { status: 404 });
 
   await trip.deleteOne();

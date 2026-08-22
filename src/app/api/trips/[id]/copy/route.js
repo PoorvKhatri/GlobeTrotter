@@ -8,7 +8,8 @@ import { serialize } from "@/lib/utils";
  * Clone a public (or owned) trip into the current user's account.
  */
 export async function POST(request, { params }) {
-  const payload = getTokenPayload();
+  const { id } = await params;
+  const payload = await getTokenPayload();
   if (!payload?.id) {
     return NextResponse.json({ error: "Please sign in to copy this trip." }, { status: 401 });
   }
@@ -17,7 +18,7 @@ export async function POST(request, { params }) {
 
   let source;
   try {
-    source = await Trip.findById(params.id).lean();
+    source = await Trip.findById(id).lean();
   } catch {
     source = null;
   }
